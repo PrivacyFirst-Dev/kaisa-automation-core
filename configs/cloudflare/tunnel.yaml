@@ -1,0 +1,17 @@
+tunnel: [SENSOR-TUNNEL-ID]
+credentials-file: /etc/cloudflared/credentials.json
+
+autoupdate-freq: 6h0m0s
+
+ingress:
+  - hostname: n8n.privacyfirstautomation.com
+    service: http://127.0.0.1:5678
+  - hostname: crm.privacyfirstautomation.com
+    service: http://127.0.0.1:8080
+  - hostname: erp.privacyfirstautomation.com
+    service: http://127.0.0.1:8888
+  - hostname: blog.privacyfirstautomation.com
+    service: http://127.0.0.1:2368
+  - hostname: monitor.privacyfirstautomation.com
+    service: http://127.0.0.1:3001
+  - service: http_status:404

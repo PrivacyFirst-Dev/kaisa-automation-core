@@ -1,0 +1,24 @@
+# Sensitif
+.env*
+!.env*.example
+backups/
+credentials/
+private-local-backup/
+volumes/
+logs/
+archives/
+context/
+
+# Data Directories (Recursive)
+**/dolibarr-mysql/
+**/ghost-mysql/
+**/ghost-content/content/
+**/dolibarr-documents/
+**/redis-data/
+
+# Backups & Temp
+*.bak*
+*.backup*
+*.save
+*.old
+*.local.dev

@@ -1,0 +1,66 @@
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5678:5678"
+    volumes:
+      - ./n8n-data:/home/node/.n8n
+    environment:
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_TUNNEL_URL=https://[SENSOR-TUNNEL].trycloudflare.com
+      - GENERIC_TIMEZONE=Asia/Jakarta
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: 3
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - ./redis-data:/data
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: 3
+
+  chromadb:
+    image: chromadb/chroma:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      - IS_PERSISTENT=true
+      - ANONYMIZED_TELEMETRY=false
+    volumes:
+      - ./chroma-data:/chroma/chroma
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: 3
+
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:11434:11434"
+    volumes:
+      - ./ollama-data:/root/.ollama
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: 3
+
+volumes:
+  n8n-data:
+  redis-data:
+  chroma-data:
+  ollama-data:

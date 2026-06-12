@@ -1,0 +1,16 @@
+
+[SNAPSHOT] System State Pre-Migration
+NAMES            IMAGE                                STATUS
+corteza          cortezaproject/corteza:2024.9        Up 14 minutes (unhealthy)
+corteza-db       postgres:15-alpine                   Up 14 minutes (healthy)
+n8n-redis        redis:7-alpine                       Up 14 minutes (healthy)
+dolibarr-erp     tuxgasy/dolibarr:latest              Up 14 minutes
+dolibarr-mysql   mariadb:10.11                        Up 14 minutes
+n8n              docker.n8n.io/n8nio/n8n:latest       Up 14 minutes (healthy)
+ghost-blog       ghost:5-alpine                       Up 14 minutes
+ghost-db         mariadb:10.11                        Up 14 minutes
+open-webui       ghcr.io/open-webui/open-webui:main   Up 14 minutes (healthy)
+chromadb         chromadb/chroma:latest               Up 14 minutes
+uptime-kuma      louislam/uptime-kuma:latest          Up 14 minutes (healthy)
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sdd       1007G   59G  898G   7% /

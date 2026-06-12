@@ -1,0 +1,101 @@
+name: Validate Stack
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docker-compose*.yml'
+      - 'scripts/*.sh'
+      - '*.env.production.example'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Trivy scan semua image aktif
+        run: |
+          for image in \
+            docker.n8n.io/n8nio/n8n:latest \
+            redis:7-alpine \
+            cortezaproject/corteza:2024.9 \
+            postgres:15-alpine \
+            tuxgasy/dolibarr:latest \
+            mariadb:10.11 \
+            ghost:5-alpine \
+            chromadb/chroma:latest \
+            louislam/uptime-kuma:latest; do
+            printf '[INFO] Scanning: 
+' "$image"
+            docker run --rm aquasec/trivy image \
+              --severity HIGH,CRITICAL \
+              --no-progress \
+              --quiet \
+              "$image" 2>/dev/null | \
+              grep -E "HIGH|CRITICAL|Total" | tail -3
+          done
+            ghost:5-alpine \
+            chromadb/chroma:latest \
+            louislam/uptime-kuma:latest; do
+            printf "[INFO] Scanning: 
+" "$image"
+            docker run --rm aquasec/trivy image \
+              --severity HIGH,CRITICAL \
+              --no-progress \
+              --quiet \
+              "$image" 2>/dev/null | \
+              grep -E "HIGH|CRITICAL|Total" | tail -3
+          done
+
+      - name: Validasi syntax docker-compose
+        run: |
+          for f in docker-compose*.yml; do
+            docker compose -f "$f" config --quiet && \
+            printf "[OK]  valid
+" "$f" || \
+            printf "[ERROR]  syntax error
+" "$f"
+          done
+
+      - name: Check Rule 05 - Port binding 127.0.0.1 only
+        run: |
+          for f in docker-compose*.yml; do
+            if grep -q "0\.0\.0\.0" "$f" 2>/dev/null; then
+              printf "[ERROR]  exposes 0.0.0.0
+" "$f"
+              exit 1
+            fi
+          done
+          printf "[OK] All ports bound to 127.0.0.1
+"
+
+      - name: Check Rule 06 - Restart policy unless-stopped
+        run: |
+          for f in docker-compose*.yml; do
+            if grep -q "restart:" "$f" && ! grep -q "restart: unless-stopped" "$f"; then
+              printf "[WARNING]  may have non-compliant restart policy
+" "$f"
+            fi
+          done
+          printf "[OK] Restart policy check completed
+"
+
+      - name: Script syntax check
+        run: |
+          find scripts/ -name "*.sh" | while read -r s; do
+            bash -n "$s" && \
+            printf "[OK] %s valid\n" "$s" || \
+            printf "[ERROR] %s syntax error\n" "$s"
+          done
+
+      - name: Alert Telegram jika CI gagal
+        if: failure()
+        run: |
+          curl -s -X POST \
+            "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d "chat_id=${TELEGRAM_CHAT_ID}" \
+            -d "text=[ERROR] CI GAGAL — Push ke Gitea ditolak. Cek log Gitea Actions."
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}

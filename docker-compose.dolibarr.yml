@@ -1,0 +1,68 @@
+name: kaisa-dolibarr
+
+services:
+  dolibarr-mysql:
+    image: mariadb:10.11
+    container_name: dolibarr-mysql
+    user: 'mysql:mysql'
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE: dolibarr
+      MARIADB_USER: dolibarr
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+    volumes:
+      - dolibarr_mysql_data:/var/lib/mysql
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - kaisa-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MARIADB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  dolibarr-erp:
+    image: tuxgasy/dolibarr:latest
+    container_name: dolibarr-erp
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8888:80"
+    environment:
+      DOLI_DB_HOST: dolibarr-mysql
+      DOLI_DB_USER: dolibarr
+      DOLI_DB_PASSWORD: ${MARIADB_PASSWORD}
+      DOLI_DB_NAME: dolibarr
+      DOLI_DB_TYPE: mysqli
+      DOLI_DB_HOST_PORT: 3306
+      DOLI_ADMIN_LOGIN: admin
+      DOLI_ADMIN_PASSWORD: ${DOLI_ADMIN_PASSWORD}
+    volumes:
+      - dolibarr_erp_data:/var/www/html
+      - ./volumes/dolibarr-documents:/var/www/documents
+    depends_on:
+      dolibarr-mysql:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - kaisa-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+volumes:
+  dolibarr_mysql_data:
+  dolibarr_erp_data:
+
+networks:
+  kaisa-net:
+    external: true

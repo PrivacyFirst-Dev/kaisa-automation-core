@@ -5,7 +5,7 @@ set -eu
 # Created: 2026-05-15 | Standard: Production
 
 # Load Environment Variable
-ENV_FILE="/home/kaisa/projects/kaisa-automation-core/.env"
+ENV_FILE="/opt/kaisa-core/.env"
 if [ -f "${ENV_FILE}" ]; then
     set -a; . "${ENV_FILE}"; set +a
 fi
@@ -17,7 +17,7 @@ if [ -z "${N8N_API_KEY:-}" ]; then
 fi
 
 # Configuration
-BACKUP_DIR="/home/kaisa/projects/kaisa-automation-core/backups"
+BACKUP_DIR="/opt/kaisa-core/backups"
 LOG_FILE="${BACKUP_DIR}/backup-n8n.log"
 RETENTION_DAYS=7
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"

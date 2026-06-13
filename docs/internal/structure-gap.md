@@ -2,7 +2,7 @@
 ### Missing Folders (per blueprint 01_kaisa_global_rules)
 
 ### Present Folders (actual)
-/home/kaisa/projects/kaisa-automation-core
+/opt/kaisa-core
 .git
 .git/branches
 .git/hooks

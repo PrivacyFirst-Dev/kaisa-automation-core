@@ -22,3 +22,10 @@ context/
 *.save
 *.old
 *.local.dev
+
+# Ghost CMS Data & Binaries (Prevent Repo Bloat)
+services/ghost/ghost-content/ghost-content/data/
+services/ghost/ghost-content/ghost-content/images/
+services/ghost/ghost-content/ghost-content/public/
+services/ghost/ghost-content/ghost-content/settings/
+services/ghost/ghost-content/ghost-content/themes/

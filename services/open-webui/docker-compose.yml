@@ -1,0 +1,25 @@
+name: kaisa-open-webui
+services:
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - SCARF_NO_ANALYTICS=1
+      - DO_NOT_TRACK=1
+      - ANONYMIZED_TELEMETRY=0
+    volumes:
+      - open-webui-data:/app/backend/data
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+volumes:
+  open-webui-data:
+    external: true
+    name: open-webui

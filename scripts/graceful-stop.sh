@@ -1,62 +1,58 @@
-#!/bin/bash
-# File: ~/scripts/graceful-stop.sh
-# Purpose: Graceful shutdown for all services
-# Usage: bash ~/scripts/graceful-stop.sh
+#!/usr/bin/env bash
+set -euo pipefail
 
-set -e
+PROJ_ROOT="/home/kaisa/projects/kaisa-automation-core"
+LOG_DIR="$PROJ_ROOT/logs"
+mkdir -p "$LOG_DIR"
+LOG_FILE="$LOG_DIR/graceful-stop-$(date +%Y%m%d).log"
 
-echo "=== Graceful Shutdown Started: $(date) ==="
+log() { printf "[%s] %s
+" "$(date +%H:%M:%S)" "$1" | tee -a "$LOG_FILE"; }
 
-# 1. Check for running backups
-echo "[1/6] Checking for active backups..."
-if pgrep -f "backup\.sh|pg_dump|mysqldump" > /dev/null; then
-    echo "WARNING: Backup in progress. Waiting 60 seconds..."
-    sleep 60
-    if pgrep -f "backup\.sh|pg_dump|mysqldump" > /dev/null; then
-        echo "ERROR: Backup still running. Abort shutdown or wait."
-        exit 1
-    fi
-fi
-echo "OK: No active backups"
+log "[INFO] Graceful stop sequence initiated."
 
-# 2. Stop cron service
-echo "[2/6] Stopping cron service..."
-sudo service cron stop 2>/dev/null || true
-echo "OK: Cron stopped"
+# 1. Snapshot state sebelum stop
+log "[INFO] Snapshot container state..."
+docker ps --format "table {{.Names}}	{{.Status}}" | tee -a "$LOG_FILE"
 
-# 3. Stop Cloudflare tunnel
-echo "[3/6] Stopping Cloudflare tunnel..."
-pkill -SIGINT -f "cloudflared" 2>/dev/null || true
-sleep 3
-echo "OK: Tunnel disconnected"
+# 2. Stop Layer 2 dulu (urutan terbalik dari start)
+log "[INFO] Stopping Layer 2 services..."
 
-# 4. Stop Ollama
-echo "[4/6] Stopping Ollama..."
-if pgrep -f "ollama serve" > /dev/null; then
-    pkill -f "ollama serve" 2>/dev/null || true
-    sleep 3
-fi
-echo "OK: Ollama stopped"
-
-# 5. Stop Docker containers (Fast & Safe)
-echo "[5/6] Stopping Docker containers..."
-
-# List semua container yang dikenal
-CONTAINERS="n8n n8n-redis corteza corteza-db uptime-kuma chromadb open-webui ghost-blog ghost-db dolibarr-erp dolibarr-mysql"
-
-# Stop satu per satu dengan timeout 10 detik (anti hang)
-# Note: --timeout menggantikan flag --time yang deprecated
-for container in $CONTAINERS; do
-  echo "  -> $container"
-  docker stop --timeout 10 "$container" 2>/dev/null || true
+for entry in \
+  "kaisa-uptime-kuma:$PROJ_ROOT/services/uptime-kuma/docker-compose.yml" \
+  "kaisa-open-webui:$PROJ_ROOT/services/open-webui/docker-compose.yml" \
+  "kaisa-corteza:$PROJ_ROOT/services/corteza/docker-compose.yml" \
+  "kaisa-dolibarr:$PROJ_ROOT/services/dolibarr/docker-compose.yml" \
+  "kaisa-ghost:$PROJ_ROOT/services/ghost/docker-compose.yml"; do
+  stack_name="${entry%:*}"
+  stack_file="${entry#*:}"
+  if [ -f "$stack_file" ]; then
+    log "[INFO] Stopping $stack_name..."
+    docker compose -p "$stack_name" -f "$stack_file" stop >> "$LOG_FILE" 2>&1 && \
+      log "[OK] $stack_name stopped." || \
+      log "[WARNING] $stack_name stop gagal, lanjut."
+  fi
 done
-echo "OK: Docker containers stopped"
 
-# 6. Log shutdown
-echo "[6/6] Logging shutdown..."
-echo "Shutdown: $(date '+%Y-%m-%d %H:%M:%S')" >> ~/scripts/shutdown.log
+# 3. Stop Layer 1 terakhir
+log "[INFO] Stopping kaisa-core (Layer 1)..."
+cd "$PROJ_ROOT"
+docker compose -p kaisa-core stop >> "$LOG_FILE" 2>&1 && \
+  log "[OK] kaisa-core stopped." || \
+  log "[WARNING] kaisa-core stop gagal."
 
-echo ""
-echo "=== All services stopped gracefully ==="
-echo "Safe to shutdown laptop now."
-echo "Next startup: bash ~/scripts/morning-start.sh"
+# 4. Verifikasi semua container down
+sleep 5
+RUNNING=$(docker ps -q 2>/dev/null | wc -l)
+if [ "$RUNNING" -eq 0 ]; then
+  log "[OK] All containers stopped. Safe to shutdown WSL."
+else
+  log "[WARNING] $RUNNING container masih running:"
+  docker ps --format "  {{.Names}}: {{.Status}}" | tee -a "$LOG_FILE"
+  log "[INFO] Force stop remaining containers..."
+  docker stop $(docker ps -q) >> "$LOG_FILE" 2>&1
+  log "[OK] Force stop done."
+fi
+
+log "[INFO] Log tersimpan di: $LOG_FILE"
+log "[INFO] Sekarang aman menjalankan: wsl --shutdown dari PowerShell"

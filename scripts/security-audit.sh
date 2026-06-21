@@ -1,40 +1,76 @@
-#!/bin/bash
-# File: ~/scripts/security-audit.sh
-# Purpose: Monthly security check
-# Usage: bash ~/scripts/security-audit.sh
+#!/usr/bin/env bash
+set -euo pipefail
 
-set -e
+printf "=== Security Audit - $(date) ===
+"
+printf "
+"
 
-echo "=== Security Audit - $(date) ==="
-echo ""
-
-# 1. Check exposed ports
-echo "1. Exposed Ports:"
-docker ps --format "table {{.Names}}\t{{.Ports}}" | grep -v "127.0.0.1" | grep -v "PORTS" || echo "OK: All ports localhost-only"
-echo ""
+# 1. Port exposure check
+printf "[CHECK] 1. Port Exposure (tidak boleh ada 0.0.0.0):
+"
+EXPOSED=$(docker ps --format "{{.Names}}: {{.Ports}}" | grep "0.0.0.0" | grep -v "3000")
+if [ -z "$EXPOSED" ]; then
+  printf "[OK] Semua port localhost-only atau Zero Trust exception.
+"
+else
+  printf "[WARNING] Port expose ke 0.0.0.0:
+"
+  printf "
+" "$EXPOSED"
+fi
+printf "
+"
 
 # 2. Docker disk usage
-echo "2. Docker Disk Usage:"
-docker system df --format "table {{.Type}}\t{{.Size}}"
-echo ""
+printf "[CHECK] 2. Docker Disk Usage:
+"
+docker system df
+printf "
+"
 
-# 3. Cloudflare tunnel routes
-echo "3. Cloudflare Tunnel Routes:"
-grep "hostname:" ~/.cloudflared/config.yml 2>/dev/null || echo "Config not found"
-echo ""
-
-# 4. Recent auth failures
-echo "4. Recent Auth Failures:"
-if [ -f /var/log/auth.log ]; then
-    grep "Failed" /var/log/auth.log 2>/dev/null | tail -3 || echo "OK: No recent failures"
+# 3. Cloudflare tunnel status
+printf "[CHECK] 3. Cloudflare Tunnel Status:
+"
+if systemctl is-active --quiet cloudflared 2>/dev/null; then
+  printf "[OK] cloudflared aktif via systemd.
+"
 else
-    echo "WSL: auth.log not available"
+  printf "[WARNING] cloudflared tidak aktif.
+"
 fi
-echo ""
+printf "
+"
 
-# 5. Check for outdated images
-echo "5. Outdated Images (run docker compose pull to update):"
-docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.CreatedAt}}" | head -10
-echo ""
+# 4. Container restart count (indikator crash loop)
+printf "[CHECK] 4. Container Restart Count (>3 = potential crash loop):
+"
+docker inspect $(docker ps -q) \
+  --format "{{.Name}}: restarts={{.RestartCount}}" 2>/dev/null | \
+  sed "s|/||" | sort
+printf "
+"
 
-echo "=== Audit Complete ==="
+# 5. Images dengan tag latest (tidak pinned)
+printf "[CHECK] 5. Images dengan tag latest (tidak pinned version):
+"
+docker images --format "{{.Repository}}:{{.Tag}}" | grep ":latest" | sort
+printf "
+"
+
+# 6. Cek .env tidak ter-expose di git
+printf "[CHECK] 6. .env tidak masuk git:
+"
+cd "/home/kaisa/projects/kaisa-automation-core"
+if git ls-files | grep -q "^\.env$"; then
+  printf "[CRITICAL] .env ADA DI GIT TRACKING.
+"
+else
+  printf "[OK] .env tidak di git.
+"
+fi
+printf "
+"
+
+printf "=== Audit Complete ===
+"

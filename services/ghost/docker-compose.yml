@@ -1,0 +1,63 @@
+name: kaisa-ghost
+services:
+  ghost:
+    image: ghost:5-alpine
+    container_name: ghost-blog
+    user: "node:node"
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:2368:2368"
+    environment:
+      - url=https://blog.privacyfirstautomation.com
+      - database__client=mysql
+      - database__connection__host=ghost-mysql
+      - database__connection__user=ghost
+      - database__connection__password=${GHOST_DB_PASSWORD}
+      - database__connection__database=ghost_db
+      - mail__transport=Direct
+    volumes:
+      - ./ghost-content/ghost-content:/var/lib/ghost/content
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 2368 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - ghost-net
+    depends_on:
+      ghost-mysql:
+        condition: service_healthy
+
+  ghost-mysql:
+    image: mysql:8.0
+    container_name: ghost-mysql
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=ghost_db
+      - MYSQL_USER=ghost
+      - MYSQL_PASSWORD=${GHOST_DB_PASSWORD}
+    volumes:
+      - ./ghost-content/ghost-mysql:/var/lib/mysql
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "ghost", "-p${GHOST_DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ghost-net
+
+networks:
+  ghost-net:
+    driver: bridge

@@ -20,8 +20,8 @@ log() { printf "[%s] %s\n" "$(date +%H:%M:%S)" "$1" | tee -a "$LOG_FILE"; }
 log "[INFO] Database backup sequence initiated."
 
 log "[INFO] Backup PostgreSQL n8n..."
-PG_USER="${POSTGRES_USER:-postgres}"
-PG_DB="${POSTGRES_DB:-n8n}"
+PG_USER="${DB_POSTGRESDB_USER:-n8n}"
+PG_DB="${DB_POSTGRESDB_DATABASE:-n8n}"
 if docker exec kaisa-core-postgres-1 pg_dump -U "$PG_USER" "$PG_DB" | \
   gzip > "$BACKUP_DIR/n8n_postgres_${TIMESTAMP}.sql.gz"; then
   log "[OK] n8n PostgreSQL backup selesai."

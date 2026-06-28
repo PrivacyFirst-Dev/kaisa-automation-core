@@ -1,39 +1,20 @@
-#!/bin/bash
-# File: ~/scripts/ollama-status.sh
-# Purpose: Check Ollama service status and models
-# Usage: bash ~/scripts/ollama-status.sh
+#!/usr/bin/env bash
+set -euo pipefail
 
-set -e
+printf "[INFO] Ollama Status - $(date +%Y-%m-%d\ %H:%M:%S)\n"
+printf "=========================================\n"
 
-echo "=== Ollama Status ==="
-echo "Timestamp: $(date '+%Y-%m-%d %H:%M:%S')"
-echo ""
-
-# Check if Ollama process is running
-if pgrep -f "ollama serve" > /dev/null; then
-    echo "Service: Running"
-    echo ""
-    
-    # List models
-    echo "Models:"
-    ollama list 2>/dev/null || echo "  (Failed to list models)"
-    echo ""
-    
-    # API version check
-    echo "API Version:"
-    curl -s http://localhost:11434/api/version 2>/dev/null || echo "  (API unreachable)"
-    echo ""
-    
-    # Quick inference test (optional, comment out if not needed)
-    # echo "Quick Test:"
-    # ollama run llama3.2:latest "ping" --nowordwrap 2>/dev/null | head -1 || echo "  (Test skipped)"
-    
+if systemctl is-active --quiet ollama 2>/dev/null; then
+  printf "[OK] Service: running (systemd)\n"
+  printf "\n[INFO] Models:\n"
+  ollama list 2>/dev/null || printf "[WARNING] Gagal list models\n"
+  printf "\n[INFO] API Version:\n"
+  curl -s http://localhost:11434/api/version 2>/dev/null && \
+    printf "\n" || \
+    printf "[WARNING] API unreachable\n"
 else
-    echo "Service: Not running"
-    echo ""
-    echo "To start Ollama:"
-    echo "  ollama serve"
-    echo ""
-    echo "Or via morning-start.sh:"
-    echo "  bash ~/scripts/morning-start.sh"
+  printf "[ERROR] Service: NOT running\n"
+  printf "[INFO] Start: sudo systemctl start ollama\n"
 fi
+
+printf "=========================================\n"

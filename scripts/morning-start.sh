@@ -65,7 +65,7 @@ for svc in cloudflared ollama; do
   fi
 done
 
-log "[INFO] Waiting 20s for all services to stabilize..."
+log "[INFO] Waiting 60s for all services to stabilize..."
 sleep 20
 
 log "[INFO] Running health checks..."

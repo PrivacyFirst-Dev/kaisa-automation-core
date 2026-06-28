@@ -56,6 +56,18 @@ else
   log "[ERROR] Dolibarr MariaDB backup GAGAL."
 fi
 
+log "[INFO] Backup ChromaDB data..."
+
+if tar -czf "$BACKUP_DIR/chromadb_data_${TIMESTAMP}.tar.gz" -C "/home/kaisa/projects/kaisa-automation-core" chroma-data; then
+
+  log "[OK] ChromaDB backup selesai."
+
+else
+
+  log "[ERROR] ChromaDB backup GAGAL."
+
+fi
+
 log "[INFO] Hapus backup lama (>7 hari)..."
 find "$BACKUP_DIR" -name "*.sql.gz" -mtime +7 -delete && \
   log "[OK] Old backups cleaned." || \

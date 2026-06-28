@@ -90,6 +90,8 @@ services:
     environment:
       - IS_PERSISTENT=true
       - ANONYMIZED_TELEMETRY=false
+      - CHROMA_SERVER_AUTHN_CREDENTIALS=${CHROMA_SERVER_AUTHN_CREDENTIALS}
+      - CHROMA_SERVER_AUTHN_PROVIDER=chromadb.auth.token_authn.TokenAuthenticationServerProvider
     volumes:
       - ./chroma-data:/chroma/chroma
     logging:

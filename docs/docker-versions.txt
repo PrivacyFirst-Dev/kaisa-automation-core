@@ -1,18 +1,13 @@
-aquasec/trivy:latest	242MB
-redis:7-alpine	61.2MB
-mariadb:10.11	466MB
-mysql:8.0	1.08GB
-cortezaproject/corteza:2024.9	632MB
-chromadb/chroma:latest	813MB
-ollama/ollama:latest	9.7GB
-ghcr.io/open-webui/open-webui:main	6.68GB
-louislam/uptime-kuma:2	2.44GB
-postgres:15-alpine	392MB
-n8nio/n8n:latest	1.95GB
-ghost:5-alpine	1.09GB
-alpine:latest	13.1MB
-docker.n8n.io/n8nio/n8n:latest	1.64GB
-ubuntu:latest	119MB
-nicolaka/netshoot:latest	874MB
-louislam/uptime-kuma:latest	724MB
-tuxgasy/dolibarr:latest	1.19GB
+=== ACTIVE DOCKER IMAGES — Updated 2026-06-29 ===
+chromadb/chroma:latest
+cortezaproject/corteza:2024.9
+ghcr.io/open-webui/open-webui:main
+ghost:5-alpine
+louislam/uptime-kuma:latest
+mariadb:10.11
+mysql:8.0
+n8nio/n8n:latest
+postgres:15-alpine
+postgres:16-alpine
+redis:7-alpine
+tuxgasy/dolibarr:latest

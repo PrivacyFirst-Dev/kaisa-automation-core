@@ -1,0 +1,50 @@
+name: kaisa-tier02
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:5678:5678'
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'
+  ghost:
+    image: ghost:5-alpine
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:2368:2368'
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'
+  corteza:
+    image: cortezaproject/corteza:2024.9
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:8080:80'
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'
+  dolibarr:
+    image: tuxgasy/dolibarr:latest
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:8888:80'
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'

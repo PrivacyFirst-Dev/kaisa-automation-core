@@ -1,0 +1,31 @@
+[SNAPSHOT] System State Post-Migration - 2026-06-29
+[INFO] All 12 containers healthy after infrastructure overhaul
+
+NAMES                             IMAGE                                STATUS
+kaisa-core-chromadb-1             chromadb/chroma:latest               Up 5 hours (healthy)
+ghost-blog                        ghost:5-alpine                       Up 15 hours (healthy)
+ghost-mysql                       mysql:8.0                            Up 24 hours (healthy)
+dolibarr-erp                      tuxgasy/dolibarr:latest              Up 34 hours (healthy)
+dolibarr-mysql                    mariadb:10.11                        Up 34 hours (healthy)
+kaisa-corteza-corteza-app-1       cortezaproject/corteza:2024.9        Up 34 hours (healthy)
+kaisa-corteza-corteza-db-1        postgres:15-alpine                   Up 34 hours (healthy)
+kaisa-uptime-kuma-uptime-kuma-1   louislam/uptime-kuma:latest          Up 34 hours (healthy)
+kaisa-open-webui-open-webui-1     ghcr.io/open-webui/open-webui:main   Up 34 hours (healthy)
+kaisa-core-n8n-1                  n8nio/n8n:latest                     Up 34 hours (healthy)
+kaisa-core-postgres-1             postgres:16-alpine                   Up 34 hours (healthy)
+kaisa-core-redis-1                redis:7-alpine                       Up 34 hours (healthy)
+
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sdd       1007G   33G  923G   4% /
+
+[INFO] Key improvements from pre-migration:
+n8n: SQLite to PostgreSQL 16-alpine
+n8n: docker.n8n.io registry to n8nio/n8n
+corteza: unhealthy to healthy (DB_DSN fixed)
+ghost-db: mariadb to mysql:8.0
+ghost: SMTP Zoho configured
+All containers: healthcheck added
+Network: kaisa-net orphan removed
+Cloudflare: Zero Trust tunnel + Access Policy active
+WSL2: .wslconfig hardened (vmIdleTimeout, firewall)
+Scripts: 8 production scripts suite completed

@@ -6,7 +6,7 @@
 ## 1. Filosofi Keamanan Kaisa Labs
 Di Kaisa Labs, kami percaya bahwa keamanan bukan sekadar fitur tambahan, melainkan fondasi arsitektur. Kami menerapkan prinsip *Privacy-First* dan *Zero-Trust* di setiap lapisan infrastruktur.
 
-Dokumen ini merinci bagaimana kami mengamankan aset digital di level Edge (Cloudflare) dari eksploitasi publik, bot malicious, dan akses tidak sah—tanpa mengorbankan performa. Bagi klien kami, ini berarti data tidak pernah terekspos langsung ke internet publik (tanpa IP publik, tanpa port terbuka), dan setiap request diverifikasi identitasnya sebelum mencapai server asal (origin).
+Dokumen ini merinci bagaimana kami mengamankan aset digital di level Edge (Cloudflare) dari eksploitasi publik, bot malicious, dan akses tidak sah--tanpa mengorbankan performa. Bagi klien kami, ini berarti data tidak pernah terekspos langsung ke internet publik (tanpa IP publik, tanpa port terbuka), dan setiap request diverifikasi identitasnya sebelum mencapai server asal (origin).
 
 ## 2. Arsitektur Ingress: Zero-Trust Tunnel
 Berbeda dengan arsitektur konvensional yang mengandalkan port forwarding dan firewall berbasis IP, Kaisa Labs menggunakan **Cloudflare Tunnel (cloudflared)**.
